@@ -54,7 +54,7 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// POST — Toggle a monthly payment
+// POST — Mark a monthly payment as paid (locked — cannot be reversed)
 router.post('/:id/payments', async (req, res) => {
   try {
     const { year, month } = req.body;
@@ -63,8 +63,11 @@ router.post('/:id/payments', async (req, res) => {
       p => p.year === year && p.month === month
     );
     if (existing) {
-      existing.isPaid = !existing.isPaid;
-      existing.paidDate = existing.isPaid ? new Date() : null;
+      if (existing.isPaid) {
+        return res.json(boarder);
+      }
+      existing.isPaid = true;
+      existing.paidDate = new Date();
     } else {
       boarder.payments.push({ year, month, isPaid: true, paidDate: new Date() });
     }
