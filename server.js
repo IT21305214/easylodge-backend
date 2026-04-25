@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const https = require('https');
 require('dotenv').config();
 
 const app = express();
@@ -22,4 +23,16 @@ mongoose.connect(MONGO_URI)
 app.use('/api/boarders', require('./routes/boarders'));
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+
+  // Keep alive ping every 5 minutes
+  setInterval(() => {
+    https.get('https://easylodge-backend-production.up.railway.app/api/boarders', (res) => {
+      console.log('Keep alive ping sent');
+    }).on('error', (err) => {
+      console.log('Ping error:', err);
+    });
+  }, 5 * 60 * 1000);
+
+});
